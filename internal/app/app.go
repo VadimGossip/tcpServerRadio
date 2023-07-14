@@ -2,6 +2,10 @@ package app
 
 import (
 	"context"
+	"github.com/VadimGossip/tcpServerRadio/internal/api/server/radio"
+	"github.com/VadimGossip/tcpServerRadio/internal/config"
+	"github.com/VadimGossip/tcpServerRadio/internal/domain"
+	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,14 +19,11 @@ func init() {
 }
 
 type App struct {
-	*Factory
-	name              string
-	configDir         string
-	appStartedAt      time.Time
-	cfg               *domain.Config
-	cPool             cpool.Pool
-	metricsHttpServer *HttpServer
-	tcpServer         *TcpServer
+	name         string
+	configDir    string
+	appStartedAt time.Time
+	cfg          *domain.Config
+	tcpServer    *TcpServer
 }
 
 func NewApp(name, configDir string, appStartedAt time.Time) *App {
@@ -41,38 +42,19 @@ func (app *App) Run() {
 	}
 	app.cfg = cfg
 
-	app.Factory, err = newFactory(app.cfg)
-	if err != nil {
-		logrus.Fatalf("Fail to create factory %s", err)
-	}
-
-	app.cPool = cpool.NewPool(cfg.ConnectionPoolCfg)
-
 	go func() {
-		tcpController := router.NewController(app.routerManager, app.protocolService, app.prometheusService)
-		app.tcpServer = NewTcpServer(app.cfg.RouterTcpServer.Port, app.cPool, tcpController)
+		tcpController := radio.NewController()
+		app.tcpServer = NewTcpServer(app.cfg.RadioTcpServer.Port, tcpController)
 		if err := app.tcpServer.Run(ctx); err != nil {
 			logrus.Fatalf("error occured while running tcp server: %s", err.Error())
 		}
 	}()
 
-	go func() {
-		app.metricsHttpServer = NewHttpServer(app.cfg.RouterMetricsHttpServer.Port)
-		initMetricsHttpRouter(app)
-		if err := app.metricsHttpServer.Run(); err != nil {
-			logrus.Fatalf("error occured while running drs metrics http server: %s", err.Error())
-		}
-	}()
-
-	logrus.Infof("Drs router started")
+	logrus.Infof("%s started", app.name)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 	cancel()
 
-	if err := app.storageClient.Disconnect(); err != nil {
-		logrus.Infof("grpc client disconnect error %s", err)
-	}
-
-	logrus.Infof("Drs router stopped")
+	logrus.Infof("%s stopped", app.name)
 }
