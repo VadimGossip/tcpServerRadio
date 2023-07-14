@@ -1,2 +1,2 @@
 # tcpServerRadio
-Simple tcp server service. After the connection, every 10 seconds reverts the time  
+Simple tcp server service. After the connection, every N seconds reverts the time  
