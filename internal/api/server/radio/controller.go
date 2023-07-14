@@ -28,8 +28,7 @@ func (c *controller) runConnectionWriter(ctx context.Context, conn net.Conn) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			msg := fmt.Sprintf("время: %s", time.Now())
-
+			msg := fmt.Sprintf("Actual time: %s\n", time.Now())
 			_, err := conn.Write([]byte(msg))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
