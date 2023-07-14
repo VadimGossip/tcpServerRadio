@@ -2,4 +2,4 @@ tcp_radio_server:
   port: 8090
 
 tcp_radio_logic:
-  response_rate: 10 #sec
+  response_rate: 3 #sec

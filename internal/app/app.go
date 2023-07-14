@@ -43,7 +43,7 @@ func (app *App) Run() {
 	app.cfg = cfg
 
 	go func() {
-		tcpController := radio.NewController()
+		tcpController := radio.NewController(app.cfg.RadioLogic)
 		app.tcpServer = NewTcpServer(app.cfg.RadioTcpServer.Port, tcpController)
 		if err := app.tcpServer.Run(ctx); err != nil {
 			logrus.Fatalf("error occured while running tcp server: %s", err.Error())

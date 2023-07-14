@@ -3,6 +3,7 @@ package radio
 import (
 	"context"
 	"fmt"
+	"github.com/VadimGossip/tcpServerRadio/internal/domain"
 	"github.com/sirupsen/logrus"
 	"net"
 	"time"
@@ -13,16 +14,17 @@ type Controller interface {
 }
 
 type controller struct {
+	cfg domain.RadioLogicConfig
 }
 
 var _ Controller = (*controller)(nil)
 
-func NewController() *controller {
-	return &controller{}
+func NewController(cfg domain.RadioLogicConfig) *controller {
+	return &controller{cfg: cfg}
 }
 
 func (c *controller) runConnectionWriter(ctx context.Context, conn net.Conn) {
-	ticker := time.NewTicker(time.Second * 10)
+	ticker := time.NewTicker(time.Second * time.Duration(c.cfg.ResponseRate))
 	for {
 		select {
 		case <-ctx.Done():

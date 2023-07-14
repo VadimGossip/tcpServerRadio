@@ -20,6 +20,9 @@ func unmarshal(cfg *domain.Config) error {
 	if err := viper.UnmarshalKey("tcp_radio_server", &cfg.RadioTcpServer); err != nil {
 		return err
 	}
+	if err := viper.UnmarshalKey("tcp_radio_logic", &cfg.RadioLogic); err != nil {
+		return err
+	}
 
 	return nil
 }
